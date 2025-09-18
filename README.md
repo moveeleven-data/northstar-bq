@@ -20,3 +20,5 @@ docs/
 
 dashboards/
 — Looker Studio links and exports
+
+<p align="center">Built by <a href="https://github.com/moveeleven-data">Matthew Tripodi</a></p>
