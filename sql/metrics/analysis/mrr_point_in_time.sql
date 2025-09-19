@@ -1,5 +1,5 @@
 /*
-   v_mrr_month_end.sql
+   mrr_point_in_time.sql
    Purpose: Compute company-level and plan-level Monthly Recurring Revenue (MRR) at a given as_of_date.
    Inputs:
      - northstar_app.subscriptions: account_id, plan_id, start_date, cancel_date,

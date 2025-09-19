@@ -4,7 +4,7 @@
 **owner:** finance@northstar or gm@northstar  
 **definition_version:** v1.0  
 **last_updated:** 2025-09-19  
-**sql_ref:** `sql/metrics/v_mrr_month_end.sql`  
+**sql_ref:** `sql/metrics/revenue/mrr_point_in_time.sql`  
 **tests_ref:** `tests/assertions/mrr_reconciliation.sql`  
 **sources:** `northstar_app.subscriptions`, `northstar_app.dim_plan`, `northstar_app.dim_account`
 

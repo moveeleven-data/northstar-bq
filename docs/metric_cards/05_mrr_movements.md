@@ -4,7 +4,7 @@ status: draft
 owner: finance@northstar or gm@northstar  
 definition_version: v1.0  
 last_updated: 2025-09-19  
-sql_ref: `sql/metrics/v_mrr_movements.sql`
+sql_ref: `sql/metrics/revenue/v_mrr_movements.sql`
 sources: `northstar-bq.northstar_app.subscriptions`, `northstar-bq.northstar_app.dim_account`
 
 ---
