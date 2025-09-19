@@ -1,48 +1,66 @@
-create or replace table `northstar-bq.saasbench_mini.subscriptions` as
+create or replace table `northstar-bq.northstar_app.subscriptions` as
 with base as (
   select
     a.account_id,
     a.first_seen_date,
-    if(rand() < 0.15, 'usage', if(rand() < 0.35, 'pro', 'team')) as plan_id
-  from `northstar-bq.saasbench_mini.dim_account` a
+    -- deterministic plan pick: ~15% usage, next ~20% pro, else team
+    case
+      when mod(abs(farm_fingerprint(concat(a.account_id, ':plan'))), 100) < 15 then 'usage'
+      when mod(abs(farm_fingerprint(concat(a.account_id, ':plan'))), 100) < 35 then 'pro'
+      else 'team'
+    end as plan_id
+  from `northstar-bq.northstar_app.dim_account` a
 ),
-prepared as (
+seeded as (
   select
     account_id,
     plan_id,
-    -- raw random start after first seen
-    date_add(first_seen_date, interval cast(rand()*120 as int64) day) as start_date_raw
+    first_seen_date,
+    -- deterministic offsets
+    mod(abs(farm_fingerprint(concat(account_id, ':start'))), 121) as start_offset_days,      -- 0..120
+    mod(abs(farm_fingerprint(concat(account_id, ':cancel_offset'))), 301) as cancel_offset_days, -- 0..300
+    -- deterministic commitments
+    mod(abs(farm_fingerprint(concat(account_id, ':seats'))), 39) + 2   as seats_calc,  -- 2..40
+    mod(abs(farm_fingerprint(concat(account_id, ':units'))), 20001) + 1000 as units_calc -- 1000..21000
   from base
 ),
 dated as (
   select
     account_id,
     plan_id,
-    -- clamp start_date to today if it would be in the future
-    least(start_date_raw, current_date()) as start_date
-  from prepared
+    least(date_add(first_seen_date, interval start_offset_days day), current_date()) as start_date,
+    case
+      -- ~18% chance to cancel, never before start, never after today
+      when mod(abs(farm_fingerprint(concat(account_id, ':cancel_flag'))), 100) < 18 then
+        least(
+          date_add(least(date_add(first_seen_date, interval start_offset_days day), current_date()),
+                   interval cancel_offset_days day),
+          current_date()
+        )
+      else null
+    end as cancel_date,
+    case when plan_id in ('team','pro') then cast(seats_calc as int64) end as seats_committed,
+    case when plan_id = 'usage' then cast(units_calc as int64) end as monthly_commit_units
+  from seeded
 ),
-with_cancel as (
+with_prices as (
   select
-    account_id,
-    plan_id,
-    start_date,
-    -- 18% chance to cancel, but never before start, never after today
-    case when rand() < 0.18 then
-      least(date_add(start_date, interval cast(rand()*300 as int64) day), current_date())
-    else null end as cancel_date
-  from dated
+    d.*,
+    p.list_price_month,
+    p.unit_rate_usd,
+    p.pricing_model
+  from dated d
+  join `northstar-bq.northstar_app.dim_plan` p using (plan_id)
 )
 select
   account_id,
   plan_id,
   start_date,
   cancel_date,
-  case when plan_id in ('team','pro') then cast(2 + rand()*40 as int64) end as seats_committed,
-  case when plan_id = 'usage' then cast(1000 + rand()*20000 as int64) end as monthly_commit_units,
+  seats_committed,
+  monthly_commit_units,
   case
-    when plan_id = 'team'  then (cast(2 + rand()*40 as int64)) * 20.00
-    when plan_id = 'pro'   then (cast(2 + rand()*40 as int64)) * 50.00
-    when plan_id = 'usage' then (cast(1000 + rand()*20000 as int64)) * 0.02
+    when plan_id in ('team','pro') then cast(seats_committed as float64) * list_price_month
+    when plan_id = 'usage' then cast(monthly_commit_units as float64) * unit_rate_usd
   end as estimated_monthly_mrr_usd
-from with_cancel;
+from with_prices;

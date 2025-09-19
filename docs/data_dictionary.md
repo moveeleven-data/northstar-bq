@@ -125,7 +125,9 @@ One subscription record per account with a single active plan at a time, used fo
 | estimated_monthly_mrr_usd| float64 | yes      | Normalized monthly recurring revenue | 600.00 |
 
 **Semantics**  
-Exactly one row per account in this synthetic set.
+- Exactly one row per account in this synthetic set.
+- “Company X, on Plan Y, starting at Date Z, contributes $N in recurring subscription revenue every month until the 
+  cancel date (or indefinitely if cancel is null).”
 
 **estimated_monthly_mrr_usd derivation**  
 - team: `seats_committed * 20.00`  
@@ -135,8 +137,13 @@ Exactly one row per account in this synthetic set.
 **Activity flag**  
 Active on date `d` if `d between start_date and coalesce(cancel_date, d)`.
 
-**Notes**  
-Monthly MRR is constant here until you introduce adjustments or step ups.
+**Notes**
+- Monthly MRR is constant here until you introduce adjustments or step ups.
+- In this dataset, an account represents a company or organization, not an individual person.
+- The plan is the subscription package an account buys.
+- Seats committed is the number of user licenses (seats) that the account has committed to pay for each month.
+- Monthly commit units is the amount of usage an account has committed to pay for each month. Could be API calls, 
+  data storage, or jobs run.
 
 ### Table: `fact_usage_daily`
 
