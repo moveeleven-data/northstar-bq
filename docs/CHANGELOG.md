@@ -1,5 +1,13 @@
 ## northstar-bq Changelog
 
+### 2015-09-20
+
+- Implemented v_mrr_movements. Ready to line up prevoius vs current month MRR per account.
+- Wrote classification logic (new, churn, expansion, contraction).
+- Aggregated row-level movements into company-level totals per month to explain change rather than just reporting 
+  net change.
+- Built full machinery to reconcile ending_mrr = previous_mrr + new + expansion - contraction - churn.
+
 ### 2015-09-19
 
 - Wrote a DEFT and run rate definition for MRR, and validated estimated_monthly_mrr_usd derivations

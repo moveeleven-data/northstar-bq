@@ -23,9 +23,6 @@
      - This view is the base for v_mrr_movements.sql.
 */
 
-
-
-
 with
 
 month_ends as (
