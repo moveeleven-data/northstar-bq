@@ -1,6 +1,13 @@
 ## northstar-bq Changelog
 
-### 2015-09-20
+**Next step:** enrich ARR Bridge with standard slices (plan, segment, region, ACV bands) and tie-out to GAAP revenue.
+
+### 2025-09-21
+
+Defined metric card for ARR Bridge (`06_arr_bridge`) and implemented its corresponding view (`v_arr_bridge`).  
+The bridge reconciles starting ARR, movements (new, expansion, contraction, churn), and ending ARR at month-end.
+
+### 2025-09-20
 
 - Implemented v_mrr_movements. Ready to line up prevoius vs current month MRR per account.
 - Wrote classification logic (new, churn, expansion, contraction).
@@ -8,7 +15,7 @@
   net change.
 - Built full machinery to reconcile ending_mrr = previous_mrr + new + expansion - contraction - churn.
 
-### 2015-09-19
+### 2025-09-19
 
 - Wrote a DEFT and run rate definition for MRR, and validated estimated_monthly_mrr_usd derivations
 - Built a point-in-time MRR query with a params CTE to sanity check totals by plan  

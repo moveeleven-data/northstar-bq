@@ -8,7 +8,8 @@
      - northstar_app.dim_account: account_id, segment, region
 
    Outputs:
-     - One row per account per month_end_date with starting_mrr, ending_mrr, and movement classification
+     - One row per account per month_end_date with starting_mrr, ending_mrr, movement classification,
+       and movement amounts
      - Aggregated company-level totals for new, expansion, contraction, and churn
      - Reconciliation identity check: ending = starting + new + expansion - contraction - churn
 */
@@ -17,11 +18,10 @@ with
 
 mrr_compare as (
   select
-      coalesce(
+      coalesce(curr.plan_id, prev.plan_id) as plan_id
+    , coalesce(
           curr.month_end_date
-        , last_day(
-             date_add(prev.month_end_date, interval 1 month)
-          )
+        , last_day(date_add(prev.month_end_date, interval 1 month))
       ) as month_end_date
     , coalesce(curr.account_id, prev.account_id)  as account_id
     , coalesce(prev.monthly_recurring_revenue, 0) as previous_month_mrr
@@ -29,13 +29,14 @@ mrr_compare as (
   from `northstar-bq.northstar_metrics.v_mrr_month_end_account` curr
   full outer join `northstar-bq.northstar_metrics.v_mrr_month_end_account` prev
     on curr.account_id = prev.account_id
-   and prev.month_end_date = date_sub(curr.month_end_date, interval 1 month)
+   and prev.month_end_date = last_day(date_sub(curr.month_end_date, interval 1 month))
 )
 
 , mrr_with_movements as (
   select
       month_end_date
     , account_id
+    , plan_id
     , previous_month_mrr
     , current_month_mrr
     , case
@@ -43,52 +44,50 @@ mrr_compare as (
         when previous_month_mrr = 0 and current_month_mrr > 0 then 'new'
         when current_month_mrr > previous_month_mrr           then 'expansion'
         when current_month_mrr < previous_month_mrr           then 'contraction'
+        else 'flat'
       end as movement_type
+    , case
+        when previous_month_mrr = 0 and current_month_mrr > 0
+        then current_month_mrr
+        else 0
+      end as new_mrr
+    , case
+        when previous_month_mrr > 0 and current_month_mrr = 0
+        then previous_month_mrr
+        else 0
+      end as churned_mrr
+    , case
+        when previous_month_mrr > 0
+         and current_month_mrr  > 0
+         and current_month_mrr  > previous_month_mrr
+        then current_month_mrr - previous_month_mrr
+        else 0
+      end as expansion_mrr
+    , case
+        when previous_month_mrr > 0
+         and current_month_mrr  > 0
+         and current_month_mrr  < previous_month_mrr
+        then previous_month_mrr - current_month_mrr
+        else 0
+      end as contraction_mrr
+    , case
+        when previous_month_mrr = current_month_mrr and current_month_mrr > 0
+        then current_month_mrr
+        else 0
+      end as flat_mrr
   from mrr_compare
 )
 
 select
     month_end_date
-  , round(
-        sum(
-            case
-              when movement_type = 'new'
-              then current_month_mrr
-              else 0
-            end
-        )
-      , 2
-    ) as new_mrr
-  , round(
-        sum(
-            case
-              when movement_type = 'churn'
-              then previous_month_mrr
-              else 0
-            end
-        )
-      , 2
-    ) as churned_mrr
-  , round(
-        sum(
-            case
-              when movement_type = 'expansion'
-              then current_month_mrr - previous_month_mrr
-              else 0
-            end
-        )
-      , 2
-    ) as expansion_mrr
-  , round(
-        sum(
-            case
-              when movement_type = 'contraction'
-              then previous_month_mrr - current_month_mrr
-              else 0
-            end
-        )
-      , 2
-    ) as contraction_mrr
-from mrr_with_movements
-group by month_end_date
-order by month_end_date;
+  , account_id
+  , plan_id
+  , movement_type
+  , previous_month_mrr
+  , current_month_mrr
+  , new_mrr
+  , churned_mrr
+  , expansion_mrr
+  , contraction_mrr
+  , flat_mrr
+from mrr_with_movements;
