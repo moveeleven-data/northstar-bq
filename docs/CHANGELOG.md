@@ -1,4 +1,4 @@
-## northstar-bq Changelog
+## Northstar Changelog
 
 **Next step:** enrich ARR Bridge with standard slices (plan, segment, region, ACV bands) and tie-out to GAAP revenue.
 
@@ -9,7 +9,7 @@ The bridge reconciles starting ARR, movements (new, expansion, contraction, chur
 
 ### 2025-09-20
 
-- Implemented v_mrr_movements. Ready to line up prevoius vs current month MRR per account.
+- Implemented v_mrr_movements. Ready to line up previous vs current month MRR per account.
 - Wrote classification logic (new, churn, expansion, contraction).
 - Aggregated row-level movements into company-level totals per month to explain change rather than just reporting 
   net change.
