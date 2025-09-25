@@ -1,4 +1,4 @@
-# <p align="center">Northstar-BQ: SaaS Analytics with BigQuery</p>
+# <p align="center">Northstar: SaaS Analytics with BigQuery</p>
 
 <p align="center">
   Implement the SaaS Metrics Playbook in Google BigQuery with synthetic and public datasets.
@@ -9,7 +9,7 @@
 
 ## Project Overview
 
-Northstar-BQ uses Google BigQuery to calculate and analyze core SaaS business metrics like recurring revenue (ARR and 
+Northstar uses Google BigQuery to calculate and analyze core SaaS business metrics like recurring revenue (ARR and 
 MRR), net revenue retention, churn, expansion, activation, and payback. Queries are written in SQL with consistent definitions, clear formulas, and data quality checks.
 
 The analysis is built on three datasets:
