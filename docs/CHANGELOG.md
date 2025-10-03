@@ -1,11 +1,17 @@
 ## Northstar Changelog
 
-**Next step:** enrich ARR Bridge with standard slices (plan, segment, region, ACV bands) and tie-out to GAAP revenue.
+### 2025-10-02
+
+Start building NRR Monthly.
 
 ### 2025-09-21
 
 Defined metric card for ARR Bridge (`06_arr_bridge`) and implemented its corresponding view (`v_arr_bridge`).  
 The bridge reconciles starting ARR, movements (new, expansion, contraction, churn), and ending ARR at month-end.
+
+**Optional next step:** enrich ARR Bridge with standard slices (plan, segment, region, ACV bands) and tie-out to GAAP 
+revenue. (A bridge just means “show me how we got from the starting number to the ending number by breaking it into 
+pieces.)
 
 ### 2025-09-20
 

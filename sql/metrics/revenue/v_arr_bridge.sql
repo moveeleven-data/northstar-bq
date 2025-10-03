@@ -18,8 +18,8 @@ with
 arr_bridge as (
     select
         month_end_date
-      , round(sum(previous_month_mrr * 12), 2)   as mrr_previous_total
-      , round(sum(current_month_mrr * 12), 2)    as mrr_current_total
+      , round(sum(previous_month_mrr * 12), 2)   as starting_arr
+      , round(sum(current_month_mrr * 12), 2)    as ending_arr
       , round(sum(new_mrr * 12), 2)              as est_new_arr
       , round(sum(expansion_mrr * 12), 2)        as est_exp_arr
       , round(sum(contraction_mrr * 12), 2)      as est_contr_arr
@@ -31,8 +31,8 @@ arr_bridge as (
 , with_nrr as (
     select
         month_end_date
-      , mrr_previous_total
-      , mrr_current_total
+      , starting_arr
+      , ending_arr
       , est_new_arr
       , est_exp_arr
       , est_contr_arr
@@ -44,10 +44,10 @@ arr_bridge as (
 , recon_diff as (
     select
         month_end_date
-      , mrr_previous_total
-      , mrr_current_total
+      , starting_arr
+      , ending_arr
       , net_new_arr
-      , round(mrr_current_total - (mrr_previous_total + net_new_arr), 2) as recon_diff
+      , round(ending_arr - (starting_arr + net_new_arr), 2) as recon_diff
     from with_nrr
 )
 

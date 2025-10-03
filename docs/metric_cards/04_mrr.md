@@ -84,6 +84,9 @@ These are precomputed in `northstar_app.subscriptions`.
 ## Reporting Notes
 MRR is **non-GAAP**. Always state definition. Reconcile separately to GAAP revenue, explaining differences (e.g., deferrals, credits).
 
+MRR = “Where am I sitting today?” (net of everything that happened before now).
+NRR = “How well did I retain and grow the dollars I had at the start of the month?”
+
 ---
 
 ## Example
